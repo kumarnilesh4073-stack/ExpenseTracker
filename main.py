@@ -7,7 +7,7 @@ while True:
     print("4. Exit")
 
     choice = input("\nEnter your choice: ")
-
+choice = "1"
     if choice == "1":
         name = input("Enter your name: ")
         amount = float(input("Enter expense amount: "))
