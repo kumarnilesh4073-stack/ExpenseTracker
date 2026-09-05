@@ -1,77 +1,92 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
+
 <head>
 
-    <title>Resume Analysis Result</title>
+    <meta charset="UTF-8">
 
     <meta name="viewport"
           content="width=device-width, initial-scale=1.0">
+
+    <title>Resume Analysis Result</title>
 
     <style>
 
         body {
             font-family: Arial, sans-serif;
-            background: #f4f6f8;
+            background: #f4f7fb;
             margin: 0;
             padding: 20px;
         }
 
         .container {
-            max-width: 700px;
+            max-width: 800px;
             margin: auto;
         }
 
         .card {
             background: white;
-            padding: 20px;
-            margin-bottom: 20px;
+            margin: 20px 0;
+            padding: 25px;
             border-radius: 15px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+            box-shadow: 0 5px 20px rgba(0,0,0,0.08);
         }
 
-        h1,
+        h1 {
+            text-align: center;
+            color: #222;
+        }
+
         h2 {
-            margin-top: 0;
+            color: #333;
         }
 
         .score {
-            font-size: 45px;
-            font-weight: bold;
             text-align: center;
+            font-size: 50px;
+            font-weight: bold;
+            color: #2563eb;
         }
 
         .skill {
             display: inline-block;
+            background: #e8f0fe;
             padding: 8px 12px;
             margin: 5px;
-            background: #eeeeee;
+            border-radius: 20px;
+        }
+
+        .missing {
+            display: inline-block;
+            background: #ffe8e8;
+            padding: 8px 12px;
+            margin: 5px;
             border-radius: 20px;
         }
 
         .job {
-            padding: 12px;
-            margin: 8px 0;
-            background: #f1f1f1;
-            border-radius: 8px;
+            margin: 15px 0;
+            padding: 15px;
+            background: #f7f7f7;
+            border-radius: 10px;
         }
 
-        .match {
-            font-size: 20px;
+        .percentage {
             font-weight: bold;
-        }
-
-        ul {
-            line-height: 1.8;
+            color: #2563eb;
         }
 
         .back {
             display: block;
             text-align: center;
-            padding: 12px;
-            background: #222;
-            color: white;
+            margin-top: 25px;
             text-decoration: none;
-            border-radius: 8px;
+            color: #2563eb;
+            font-weight: bold;
+        }
+
+        ul {
+            line-height: 1.8;
         }
 
     </style>
@@ -82,18 +97,24 @@
 
 <div class="container">
 
+    <h1>AI Resume Analysis</h1>
+
     <div class="card">
 
-        <h1>Resume Analysis</h1>
+        <h2>Resume</h2>
 
         <p>
-            Resume:
-            <strong>{{ filename }}</strong>
+            <strong>File:</strong>
+            {{ filename }}
         </p>
 
         <div class="score">
-            {{ score }}/100
+            {{ score }}%
         </div>
+
+        <p style="text-align:center;">
+            Resume Score
+        </p>
 
     </div>
 
@@ -114,7 +135,7 @@
 
         {% else %}
 
-            <p>No matching skills found.</p>
+            <p>No skills detected.</p>
 
         {% endif %}
 
@@ -127,19 +148,17 @@
 
         {% if missing_skills %}
 
-            <ul>
+            {% for skill in missing_skills %}
 
-                {% for skill in missing_skills %}
+                <span class="missing">
+                    {{ skill }}
+                </span>
 
-                    <li>{{ skill }}</li>
-
-                {% endfor %}
-
-            </ul>
+            {% endfor %}
 
         {% else %}
 
-            <p>No missing skills found.</p>
+            <p>No missing skills.</p>
 
         {% endif %}
 
@@ -150,37 +169,47 @@
 
         <h2>Job Match</h2>
 
-        {% if job_match is not none %}
+        <div class="score">
+            {{ job_match }}%
+        </div>
 
-            <p class="match">
-                Job Match: {{ job_match }}%
-            </p>
+        {% if job_required_skills %}
 
-            {% if missing_job_skills %}
+            <h3>Required Skills</h3>
 
-                <h3>Missing Skills for This Job</h3>
+            {% for skill in job_required_skills %}
 
-                <ul>
+                <span class="skill">
+                    {{ skill }}
+                </span>
 
-                    {% for skill in missing_job_skills %}
+            {% endfor %}
 
-                        <li>{{ skill }}</li>
+            <h3>Missing Skills for This Job</h3>
 
-                    {% endfor %}
+            {% if job_missing_skills %}
 
-                </ul>
+                {% for skill in job_missing_skills %}
+
+                    <span class="missing">
+                        {{ skill }}
+                    </span>
+
+                {% endfor %}
+
+            {% else %}
+
+                <p>
+                    You have all detected required skills.
+                </p>
 
             {% endif %}
 
         {% else %}
 
             <p>
-                No job description was provided.
-            </p>
-
-            <p>
-                Add a job description to calculate
-                your job match percentage.
+                No matching skills were detected
+                in the job description.
             </p>
 
         {% endif %}
@@ -200,8 +229,9 @@
                     {{ job.role }}
                 </strong>
 
-                -
-                {{ job.percentage }}%
+                <span class="percentage">
+                    {{ job.percentage }}%
+                </span>
 
             </div>
 
@@ -218,9 +248,11 @@
 
             <ul>
 
-                {% for item in strengths %}
+                {% for strength in strengths %}
 
-                    <li>{{ item }}</li>
+                    <li>
+                        {{ strength }}
+                    </li>
 
                 {% endfor %}
 
@@ -228,7 +260,9 @@
 
         {% else %}
 
-            <p>No strengths detected.</p>
+            <p>
+                No strengths detected.
+            </p>
 
         {% endif %}
 
@@ -239,24 +273,37 @@
 
         <h2>Improvement Suggestions</h2>
 
-        <ul>
+        {% if suggestions %}
 
-            {% for suggestion in suggestions %}
+            <ul>
 
-                <li>{{ suggestion }}</li>
+                {% for suggestion in suggestions %}
 
-            {% endfor %}
+                    <li>
+                        {{ suggestion }}
+                    </li>
 
-        </ul>
+                {% endfor %}
+
+            </ul>
+
+        {% else %}
+
+            <p>
+                Your resume looks good.
+            </p>
+
+        {% endif %}
 
     </div>
 
 
     <a href="/" class="back">
-        Analyze Another Resume
+        ← Analyze Another Resume
     </a>
 
 </div>
 
 </body>
+
 </html>
