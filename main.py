@@ -27,8 +27,7 @@ SKILLS = [
 JOB_ROLES = {
     "Customer Support": [
         "Communication Skills",
-        "Customer Handling",
-        "Basic Computer Knowledge"
+        "Customer Handling"
     ],
     "Office Assistant": [
         "Communication Skills",
@@ -39,8 +38,7 @@ JOB_ROLES = {
     "Team Leader": [
         "Communication Skills",
         "Teamwork",
-        "Leadership",
-        "Problem Solving"
+        "Leadership"
     ],
     "Python Developer": [
         "Python",
@@ -56,7 +54,7 @@ JOB_ROLES = {
     "General Entry Level": [
         "Communication Skills",
         "Teamwork",
-        "Time Management"
+        "Basic Computer Knowledge"
     ]
 }
 
@@ -90,14 +88,10 @@ def analyze():
                 text += page_text + " "
 
     except Exception as e:
-        return "Unable to read the PDF: " + str(e)
+        return f"Error reading PDF: {e}"
 
     text = text.lower()
     job_description = job_description.lower()
-
-    # -----------------------------
-    # FIND SKILLS IN RESUME
-    # -----------------------------
 
     found_skills = []
 
@@ -105,37 +99,20 @@ def analyze():
         if skill.lower() in text:
             found_skills.append(skill)
 
-    # -----------------------------
-    # FIND MISSING SKILLS
-    # -----------------------------
-
     missing_skills = []
 
     for skill in SKILLS:
         if skill not in found_skills:
             missing_skills.append(skill)
 
-    # -----------------------------
-    # RESUME SCORE
-    # -----------------------------
-
-    score = int((len(found_skills) / len(SKILLS)) * 100)
-
-    # -----------------------------
-    # STRENGTHS
-    # -----------------------------
+    if len(SKILLS) > 0:
+        score = int((len(found_skills) / len(SKILLS)) * 100)
+    else:
+        score = 0
 
     strengths = found_skills
 
-    # -----------------------------
-    # WEAKNESSES
-    # -----------------------------
-
     weaknesses = missing_skills
-
-    # -----------------------------
-    # JOB ROLE MATCH
-    # -----------------------------
 
     job_matches = []
 
@@ -156,89 +133,57 @@ def analyze():
             "percentage": percentage
         })
 
-    # -----------------------------
-    # JOB DESCRIPTION MATCH
-    # -----------------------------
+    job_required_skills = []
 
-    job_match = None
-    job_skills = []
-    missing_job_skills = []
+    for skill in SKILLS:
+        if skill.lower() in job_description:
+            job_required_skills.append(skill)
 
-    if job_description.strip():
+    job_matched_skills = []
 
-        for skill in SKILLS:
+    for skill in job_required_skills:
+        if skill in found_skills:
+            job_matched_skills.append(skill)
 
-            if skill.lower() in job_description:
-                job_skills.append(skill)
+    job_missing_skills = []
 
-        if len(job_skills) > 0:
+    for skill in job_required_skills:
+        if skill not in found_skills:
+            job_missing_skills.append(skill)
 
-            matched_job_skills = []
-
-            for skill in job_skills:
-
-                if skill in found_skills:
-                    matched_job_skills.append(skill)
-
-            missing_job_skills = [
-                skill
-                for skill in job_skills
-                if skill not in found_skills
-            ]
-
-            job_match = int(
-                (len(matched_job_skills) / len(job_skills)) * 100
-            )
-
-        else:
-            job_match = 0
-
-    # -----------------------------
-    # AI-STYLE SUGGESTIONS
-    # -----------------------------
+    if len(job_required_skills) > 0:
+        job_match = int(
+            (len(job_matched_skills) / len(job_required_skills)) * 100
+        )
+    else:
+        job_match = 0
 
     suggestions = []
 
-    if score < 50:
+    if score < 40:
         suggestions.append(
-            "Add more relevant skills to your resume."
+            "Add more relevant skills to improve your resume score."
         )
 
-    if score >= 50 and score < 80:
+    if score >= 40 and score < 70:
         suggestions.append(
-            "Your resume is good, but you can improve your skills section."
+            "Your resume is improving. Add more job-related skills."
         )
 
-    if score >= 80:
+    if score >= 70:
         suggestions.append(
-            "Your resume has a strong skills profile."
+            "Good resume score. Keep your skills and experience updated."
         )
 
     if missing_skills:
         suggestions.append(
-            "Consider learning or adding relevant missing skills."
+            "Consider learning some of the missing skills."
         )
 
-    if job_match is not None:
-
-        if job_match < 50:
-            suggestions.append(
-                "Your resume has a low match with this job description."
-            )
-
-        elif job_match < 80:
-            suggestions.append(
-                "Your resume has a moderate match with this job."
-            )
-
-        else:
-            suggestions.append(
-                "Your resume is a strong match for this job."
-            )
-
-    # -----------------------------
-    # RESULT PAGE
-    # -----------------------------
+    if job_missing_skills:
+        suggestions.append(
+            "Add relevant skills required by the job description."
+        )
 
     return render_template(
         "result.html",
@@ -250,8 +195,9 @@ def analyze():
         weaknesses=weaknesses,
         job_matches=job_matches,
         job_match=job_match,
-        job_skills=job_skills,
-        missing_job_skills=missing_job_skills,
+        job_required_skills=job_required_skills,
+        job_matched_skills=job_matched_skills,
+        job_missing_skills=job_missing_skills,
         suggestions=suggestions
     )
 
